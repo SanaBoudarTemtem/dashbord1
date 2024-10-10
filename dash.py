@@ -29,10 +29,12 @@ def load_data(file):
         st.sidebar.error(f"Error loading file: {str(e)}")
     return None
 
+
 @st.cache_data
 def load_geojson(geojson_path="all-wilayas.geojson"):
-    with open(geojson_path, "r") as file:
+    with open(geojson_path, "r", encoding="utf-8") as file:
         return json.load(file)
+
 
 def preprocess_data(df, date_columns):
     for col in date_columns:
