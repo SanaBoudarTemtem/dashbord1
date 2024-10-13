@@ -128,7 +128,10 @@ card_style = """
         margin: 8px;
         display: flex;
         flex-direction: column;
-        width: 220px;
+        width: 220px; 
+        height: 110px; 
+        max-width: 220px; 
+        min-height: 110px; 
     }
     .kpi-title {
         font-size: 16px;
@@ -459,6 +462,11 @@ if uploaded_file is not None:
             values='Number of Unique Users',
             title='Distribution of Users per Segment',
             color_discrete_sequence=color_scheme
+        )
+        fig4.update_traces(textposition='inside', textinfo='percent+label')
+        fig4.update_layout(
+            title=dict(font=dict(size=18)),
+            margin=dict(t=50, b=20, l=0, r=0)
         )
         col13.plotly_chart(fig4, use_container_width=True)
 
