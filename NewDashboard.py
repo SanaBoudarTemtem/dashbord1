@@ -127,7 +127,7 @@ if st.sidebar.button("Products"):
     st.session_state.page = 'Products'
 if st.sidebar.button("Users"):
     st.session_state.page = 'Users'
-if st.sidebar.button("Shops Overview"):
+if st.sidebar.button("Shops"):
     st.session_state.page = 'Shops'
 
 
