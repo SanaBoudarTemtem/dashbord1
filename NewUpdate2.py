@@ -73,7 +73,7 @@ def display_wilaya_map(data, geojson_data, name_column, value_column, metric='su
         tooltip=folium.features.GeoJsonTooltip(fields=['name', value_column], aliases=['Wilaya:', f'{value_column.replace("_", " ").title()}:'])
     ).add_to(folium_map)
 
-    # st.subheader(f"🌍 Geographical Distribution ")
+    st.subheader(f"🌍 Geographical Distribution ")
     folium_static(folium_map)
 
 # Load user data from the file uploader
@@ -81,55 +81,9 @@ st.sidebar.image("C:/Users/ASUS/Documents/dashbord1/Logo-temtemOne.svg", use_col
 st.sidebar.subheader("Choose a CSV or Excel file")
 uploaded_file = st.sidebar.file_uploader("Drag and drop file here", type=["csv", "xlsx"])
 
-
-
-
-# Sidebar for navigation with buttons
-# st.sidebar.title("Navigation")
-
-# CSS for styling buttons to take full width
-st.sidebar.markdown(
-    """
-    <style>
-    .stButton button {
-        width: 100%;
-        margin: 0 auto;
-        background-color: #e67e22;
-        color: white;
-        border-radius: 0px;
-        height: 50px;
-        font-weight: bold;
-        font-size: 16px;
-    }
-    .stButton button:hover {
-        background-color: #0a0a23;
-    }
-    </style>
-    """, unsafe_allow_html=True
-)
-
-
-# Initialize session state for navigation
-if 'page' not in st.session_state:
-    st.session_state.page = 'Submissions'  # Default page
-
-# Sidebar for navigation with buttons
-# st.sidebar.title("Navigation")
-
-# Navigation buttons with session state management
-if st.sidebar.button("Submissions"):
-    st.session_state.page = 'Submissions'
-if st.sidebar.button("Cashback"):
-    st.session_state.page = 'Cashback'
-if st.sidebar.button("Campaigns"):
-    st.session_state.page = 'Entreprises'
-if st.sidebar.button("Products"):
-    st.session_state.page = 'Products'
-if st.sidebar.button("Users"):
-    st.session_state.page = 'Users'
-if st.sidebar.button("Shops"):
-    st.session_state.page = 'Shops'
-
+# Sidebar for navigation
+st.sidebar.title("Navigation")
+page = st.sidebar.selectbox("Select Page", ["Submissions", "Cashback", "Entreprises", "Products", "Users", "Shops"])
 
 # CSS for the KPI cards
 card_style = """
@@ -173,16 +127,16 @@ st.markdown(card_style, unsafe_allow_html=True)
 # Main section that displays the content of each page
 if uploaded_file is not None:
     if uploaded_file.name.endswith('.csv'):
-        df = pd.read_csv(uploaded_file, on_bad_lines='skip')
+        df = pd.read_csv(uploaded_file)
     else:
-        df = pd.read_excel(uploaded_file, on_bad_lines='skip')
+        df = pd.read_excel(uploaded_file)
     
     st.sidebar.success(f"Successfully loaded file: {uploaded_file.name}")
     st.sidebar.write(f"Data loaded successfully with {df.shape[0]} rows and {df.shape[1]} columns.")
     total_submissions = len(df)
 
     # Implement the logic for each page based on the sidebar selection
-    if st.session_state.page == "Submissions":
+    if page == "Submissions":
         st.title("Submissions Overview")
 
         # Period selection for Submissions page only
@@ -258,7 +212,7 @@ if uploaded_file is not None:
             st.markdown(
         f"""
         <div class='kpi-card'>
-            <div class='kpi-title'>Rejected/Pending ❌</div>
+            <div class='kpi-title'>Rejected/Pending</div>
             <div class='kpi-value' style='font-size:15px;'>{status_breakdown}</div>
         </div>
         """, 
@@ -303,64 +257,7 @@ if uploaded_file is not None:
                st.dataframe(submission_count_per_wilaya, height=540, use_container_width=True)
                st.markdown('</div>', unsafe_allow_html=True)
 
-        
-
-        # Ensure the 'createdAt_challengesubmissions' column is in datetime format
-        if 'createdAt_challengesubmissions' in df.columns:
-            df['createdAt_challengesubmissions'] = pd.to_datetime(df['createdAt_challengesubmissions'], errors='coerce')
-            df = df[df['createdAt_challengesubmissions'].notnull()]  # Remove null dates
-
-            # Daily submissions
-            daily_submissions = df.groupby(df['createdAt_challengesubmissions'].dt.date).size().reset_index(name='Submissions')
-            fig_daily = px.line(
-                daily_submissions,
-                x='createdAt_challengesubmissions',
-                y='Submissions',
-                title='Daily Submissions',
-                labels={'createdAt_challengesubmissions': 'Date', 'Submissions': 'Number of Submissions'},
-                color_discrete_sequence=color_scheme
-            )
-            fig_daily.update_layout(xaxis_title='Date', yaxis_title='Submissions')
-
-            # Weekly submissions
-            weekly_submissions = df.groupby(df['createdAt_challengesubmissions'].dt.to_period('W')).size().reset_index(name='Submissions')
-            weekly_submissions['createdAt_challengesubmissions'] = weekly_submissions['createdAt_challengesubmissions'].astype(str)  # Convert period to string
-            fig_weekly = px.line(
-                weekly_submissions,
-                x='createdAt_challengesubmissions',
-                y='Submissions',
-                title='Weekly Submissions',
-                labels={'createdAt_challengesubmissions': 'Week', 'Submissions': 'Number of Submissions'},
-                color_discrete_sequence=color_scheme
-            )
-            fig_weekly.update_layout(xaxis_title='Week', yaxis_title='Submissions')
-
-            # Monthly submissions
-            monthly_submissions = df.groupby(df['createdAt_challengesubmissions'].dt.to_period('M')).size().reset_index(name='Submissions')
-            monthly_submissions['createdAt_challengesubmissions'] = monthly_submissions['createdAt_challengesubmissions'].astype(str)  # Convert period to string
-            fig_monthly = px.line(
-                monthly_submissions,
-                x='createdAt_challengesubmissions',
-                y='Submissions',
-                title='Monthly Submissions',
-                labels={'createdAt_challengesubmissions': 'Month', 'Submissions': 'Number of Submissions'},
-                color_discrete_sequence=color_scheme
-            )
-            fig_monthly.update_layout(xaxis_title='Month', yaxis_title='Submissions')
-
-            # Display the 3 graphs
-            # st.subheader("Submissions Over Time")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.plotly_chart(fig_daily, use_container_width=True)
-            with col2:
-                st.plotly_chart(fig_weekly, use_container_width=True)
-            with col3:
-                st.plotly_chart(fig_monthly, use_container_width=True)
-
-
-
-    elif st.session_state.page == "Cashback":
+    elif page == "Cashback":
         st.title("Cashback Overview")
 
         # Compute Cashback KPIs
@@ -432,14 +329,14 @@ if uploaded_file is not None:
 
 
 
-    elif st.session_state.page == "Entreprises":
+    elif page == "Entreprises":
         st.title("Entreprises Overview")
         # Add logic for KPIs and visualizations related to entreprises
 
 
 
 
-    elif st.session_state.page == "Products":
+    elif page == "Products":
     
         st.title("Products Overview")
 
@@ -482,27 +379,17 @@ if uploaded_file is not None:
                 st.markdown(f"<div class='kpi-card'><div class='kpi-title'>Total Products 🛍️</div><div class='kpi-value'>{total_products}</div></div>", unsafe_allow_html=True)
             
             with col2:
-                st.markdown(f"<div class='kpi-card'><div class='kpi-title'>Top Product📈</div><div class='kpi-value'>{top_products_by_submissions.index[0]}</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='kpi-card'><div class='kpi-title'>Top Product (by Submissions) 📈</div><div class='kpi-value'>{top_products_by_submissions.index[0]}</div></div>", unsafe_allow_html=True)
 
-          
-            # Display the two tables in the same line with full width
-            # st.subheader("Top 10 Products by Submissions and Cashback Credited")
+        # Display Top 10 Products by Submissions
+            st.subheader("Top 10 Products by Submissions")
+            st.dataframe(top_products_by_submissions)
 
-# Create two columns
-            col1, col2 = st.columns(2)
+        # Display Cashback per Product
+            st.subheader("Top 10 Products by Cashback Credited")
+            st.dataframe(cashback_per_product)
 
-# Display Top 10 Products by Submissions in the first column
-            with col1:
-                st.markdown("###### Top 10 Products by Submissions")
-                st.dataframe(top_products_by_submissions, use_container_width=True)
-
-            # Display Cashback per Product in the second column
-            with col2:
-                st.markdown("###### Top 10 Products by Cashback Credited")
-                st.dataframe(cashback_per_product, use_container_width=True)
-
-
-                    # Plot submissions over time
+        # Plot submissions over time
             st.plotly_chart(fig_submissions_over_time, use_container_width=True)
 
 
@@ -511,7 +398,7 @@ if uploaded_file is not None:
 
 
 
-    elif st.session_state.page == "Users":
+    elif page == "Users":
         st.title("Users Overview")
 
     # Check if 'submittedBy.id' and name/surname columns exist in the dataframe
@@ -546,52 +433,18 @@ if uploaded_file is not None:
                 fig_submissions_over_time_users.update_layout(xaxis_title='Month', yaxis_title='Number of Submissions')
 
         # User type distribution (if 'userType' exists)
-                    # Calculate age from 'dateOfBirth'
-        df['Date de naissance'] = pd.to_datetime(df['Date de naissance'], errors='coerce')
-        today = pd.to_datetime('today').normalize()
-        df['Age'] = df['Date de naissance'].apply(lambda dob: today.year - dob.year if pd.notnull(dob) else None)
+            if 'userType' in df.columns:
+                user_type_distribution = df['userType'].value_counts()
 
-        # Gender distribution
-        if 'Genre' in df.columns:
-            gender_distribution = df['Genre'].value_counts()
-
-            # Plot gender distribution (Pie chart)
-            fig_gender_distribution = px.pie(
-                gender_distribution,
-                names=gender_distribution.index,
-                values=gender_distribution.values,
-                title="Gender Distribution",
-                color_discrete_sequence=color_scheme,
-                hole=0.4
-            )
-            fig_gender_distribution.update_traces(textposition='inside', textinfo='percent+label')
-
-        # Age distribution
-        if 'Age' in df.columns:
-            fig_age_distribution = px.histogram(
-                df[df['Age'].notnull()],  # Exclude null values for age
-                x='Age',
-                nbins=10,  # Adjust the number of bins for age ranges
-                title="Age Distribution",
-                labels={'Age': 'Age', 'count': 'Number of Users'},
-                color_discrete_sequence=color_scheme
-            )
-            fig_age_distribution.update_layout(bargap=0.1)  # Adjust spacing between bars if needed
-
-        # User type distribution
-        if 'userType' in df.columns:
-            user_type_distribution = df['userType'].value_counts()
-
-            # Plot user type distribution (Pie chart)
-            fig_user_type_distribution = px.pie(
+                fig_user_type_distribution = px.pie(
                 user_type_distribution,
                 names=user_type_distribution.index,
                 values=user_type_distribution.values,
-                title="User Type Distribution",
+                title='User Type Distribution',
                 color_discrete_sequence=color_scheme,
-                hole=0.4
+                hole=0.4  # Donut chart style
             )
-            fig_user_type_distribution.update_traces(textposition='inside', textinfo='percent+label')
+                fig_user_type_distribution.update_traces(textposition='inside', textinfo='percent+label')
 
     # Display KPIs for Users
             col1, col2 = st.columns(2)
@@ -612,34 +465,20 @@ if uploaded_file is not None:
 
         # Display Users (Name, Surname, Submissions)
             st.subheader("Top Users by Submissions")
-            st.dataframe(top_users_by_name[['Prenom', 'Nom', 'Submissions']],use_container_width=True)
+            st.dataframe(top_users_by_name[['Prenom', 'Nom', 'Submissions']])
 
         # Plot submissions over time
             st.subheader("User Submissions Over Time (Top Users)")
             st.plotly_chart(fig_submissions_over_time_users, use_container_width=True)
 
         # Plot User Type Distribution (if applicable)
-                    # Display the three charts (Gender, Age, and User Type Distribution) on the same line
-        col1, col2, col3 = st.columns(3)
-
-        # Plot Gender Distribution
-        with col1:
-            st.subheader("Gender Distribution")
-            st.plotly_chart(fig_gender_distribution, use_container_width=True)
-
-        # Plot Age Distribution
-        with col2:
-            st.subheader("Age Distribution")
-            st.plotly_chart(fig_age_distribution, use_container_width=True)
-
-        # Plot User Type Distribution
-        with col3:
-            st.subheader("User Type Distribution")
-            st.plotly_chart(fig_user_type_distribution, use_container_width=True)
+            if 'userType' in df.columns:
+                st.subheader("User Type Distribution")
+                st.plotly_chart(fig_user_type_distribution, use_container_width=True)
 
 
  
-    elif st.session_state.page == "Shops":
+    elif page == "Shops":
         st.title("Shops Overview")
 
     # Vérifier si 'storeName' est dans le fichier

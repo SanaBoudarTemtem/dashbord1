@@ -73,7 +73,7 @@ def display_wilaya_map(data, geojson_data, name_column, value_column, metric='su
         tooltip=folium.features.GeoJsonTooltip(fields=['name', value_column], aliases=['Wilaya:', f'{value_column.replace("_", " ").title()}:'])
     ).add_to(folium_map)
 
-    # st.subheader(f"🌍 Geographical Distribution ")
+    st.subheader(f"🌍 Geographical Distribution ")
     folium_static(folium_map)
 
 # Load user data from the file uploader
@@ -102,7 +102,7 @@ st.sidebar.markdown(
         font-size: 16px;
     }
     .stButton button:hover {
-        background-color: #0a0a23;
+        background-color: #d35400;
     }
     </style>
     """, unsafe_allow_html=True
@@ -121,13 +121,13 @@ if st.sidebar.button("Submissions"):
     st.session_state.page = 'Submissions'
 if st.sidebar.button("Cashback"):
     st.session_state.page = 'Cashback'
-if st.sidebar.button("Campaigns"):
+if st.sidebar.button("Entreprises"):
     st.session_state.page = 'Entreprises'
 if st.sidebar.button("Products"):
     st.session_state.page = 'Products'
 if st.sidebar.button("Users"):
     st.session_state.page = 'Users'
-if st.sidebar.button("Shops"):
+if st.sidebar.button("Shops Overview"):
     st.session_state.page = 'Shops'
 
 
@@ -173,9 +173,9 @@ st.markdown(card_style, unsafe_allow_html=True)
 # Main section that displays the content of each page
 if uploaded_file is not None:
     if uploaded_file.name.endswith('.csv'):
-        df = pd.read_csv(uploaded_file, on_bad_lines='skip')
+        df = pd.read_csv(uploaded_file,on_bad_lines='skip')
     else:
-        df = pd.read_excel(uploaded_file, on_bad_lines='skip')
+        df = pd.read_excel(uploaded_file,on_bad_lines='skip')
     
     st.sidebar.success(f"Successfully loaded file: {uploaded_file.name}")
     st.sidebar.write(f"Data loaded successfully with {df.shape[0]} rows and {df.shape[1]} columns.")
@@ -258,7 +258,7 @@ if uploaded_file is not None:
             st.markdown(
         f"""
         <div class='kpi-card'>
-            <div class='kpi-title'>Rejected/Pending ❌</div>
+            <div class='kpi-title'>Rejected/Pending</div>
             <div class='kpi-value' style='font-size:15px;'>{status_breakdown}</div>
         </div>
         """, 
@@ -349,7 +349,7 @@ if uploaded_file is not None:
             fig_monthly.update_layout(xaxis_title='Month', yaxis_title='Submissions')
 
             # Display the 3 graphs
-            # st.subheader("Submissions Over Time")
+            st.subheader("Submissions Over Time")
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.plotly_chart(fig_daily, use_container_width=True)

@@ -22,6 +22,23 @@ def load_geojson(geojson_path="all-wilayas.geojson"):
 
 
 
+
+# CSS for visualization cards
+viz_card_style = """
+<style>
+    .viz-card {
+        background-color: #31333F;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        margin: 10px;
+    }
+</style>
+"""
+st.markdown(viz_card_style, unsafe_allow_html=True)
+
+
+
 color_scheme = ['#e67e22', '#f5b041', '#d35400', '#f8c471','#f39c12']
 
 # Compute metrics per Wilaya for the table
@@ -731,7 +748,7 @@ if uploaded_file is not None:
     )
         fig_approval_rate.update_traces(marker_line_width=1.5, marker_line_color='black')
         fig_approval_rate.update_layout(
-        title_x=0.2,
+        title_x=0.5,
         title_font_size=18,
         margin={"r": 0, "t": 50, "l": 0, "b": 0},
         plot_bgcolor='rgba(0,0,0,0)'
